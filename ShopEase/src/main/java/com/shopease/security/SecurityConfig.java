@@ -29,14 +29,16 @@ public class SecurityConfig {
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
 		return http
-				.csrf(c->c.disable())
 				.authorizeHttpRequests(a->a
-						.requestMatchers("/register/**", "/login/**", "/product/**").permitAll()
-						.requestMatchers("/seller/**").hasAuthority("SELLER")
-						.requestMatchers("/users", "/admin/**").hasAuthority("ADMIN")
+						.requestMatchers("/register/**", "/login/**", "/product/**", "/upload/**").permitAll()
+						.requestMatchers("/user/**").hasAnyAuthority("USER", "SELLER", "ADMIN")
+						.requestMatchers("/cart/**").hasAuthority("USER")
+						.requestMatchers("/seller/**", "/cart/**", "/category/**").hasAuthority("SELLER")
+						.requestMatchers("/admin/**", "/cart/**", "/category/**").hasAuthority("ADMIN")
 						.anyRequest()
 						.authenticated())
 				.userDetailsService(userDetailsService)
+				.csrf(c->c.disable())
 				.sessionManagement(c->c
 						.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

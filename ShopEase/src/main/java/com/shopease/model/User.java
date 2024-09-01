@@ -2,20 +2,23 @@ package com.shopease.model;
 
 import java.util.Collection;
 import java.util.List;
-
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class User implements UserDetails{
@@ -42,9 +45,15 @@ public class User implements UserDetails{
 	@Enumerated(EnumType.STRING)
 	private Role role;
 	
-	@ManyToOne
-	@Cascade(CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.ALL)
 	private Address address;
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	@JsonIgnore
+	private List<Product> products;
+	
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+	private Cart cart;
 
 	public Long getId() {
 		return id;
@@ -120,8 +129,29 @@ public class User implements UserDetails{
 
 	
 
+
+	public List<Product> getProducts() {
+		return products;
+	}
+
+	public void setProducts(List<Product> products) {
+		this.products = products;
+	}
+	
+	
+
+	public Cart getCart() {
+		return cart;
+	}
+
+	public void setCart(Cart cart) {
+		this.cart = cart;
+	}
+	
+	
+
 	public User(Long id, String firstName, String lastName, String username, String password, String email,
-			String phoneNo, Role role, Address address) {
+			String phoneNo, Role role, Address address, List<Product> products, Cart cart) {
 		super();
 		this.id = id;
 		this.firstName = firstName;
@@ -132,6 +162,8 @@ public class User implements UserDetails{
 		this.phoneNo = phoneNo;
 		this.role = role;
 		this.address = address;
+		this.products = products;
+		this.cart = cart;
 	}
 
 	public User() {

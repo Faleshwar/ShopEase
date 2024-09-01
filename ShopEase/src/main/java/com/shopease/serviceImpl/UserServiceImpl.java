@@ -7,14 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.shopease.dto.AddressDto;
 import com.shopease.dto.UserDto;
+import com.shopease.dto.UserUpdateDto;
 import com.shopease.model.Address;
 import com.shopease.model.Role;
 import com.shopease.model.User;
 import com.shopease.repository.AddressRepository;
 import com.shopease.repository.UserRepository;
-import com.shopease.service.AddressService;
 import com.shopease.service.UserService;
+
+import ch.qos.logback.core.joran.conditional.IfAction;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -26,12 +29,12 @@ public class UserServiceImpl implements UserService{
 	@Autowired
 	private PasswordEncoder encoder;
 
-	private UserDto convertToDto(User user) {
-		return new UserDto(user.getId(), user.getFirstName(), user.getLastName(), user.getUsername(), user.getPassword(), user.getEmail(), user.getPhoneNo(), user.getRole(), user.getAddress());
+	public UserDto convertToDto(User user) {
+		return new UserDto(user.getId(), user.getFirstName(), user.getLastName(), user.getUsername(), user.getPassword(), user.getEmail(), user.getPhoneNo(), user.getRole(), user.getAddress(), user.getProducts(), user.getCart());
 	}
 	
-	private User convertToEntity(UserDto userDto) {
-		return new User(userDto.getId(), userDto.getFirstName(), userDto.getLastName(), userDto.getUsername(), userDto.getPassword(), userDto.getEmail(), userDto.getPhoneNo(), userDto.getRole(), userDto.getAddress());
+	public User convertToEntity(UserDto userDto) {
+		return new User(userDto.getId(), userDto.getFirstName(), userDto.getLastName(), userDto.getUsername(), userDto.getPassword(), userDto.getEmail(), userDto.getPhoneNo(), userDto.getRole(), userDto.getAddress(), userDto.getProducts(), userDto.getCart());
 	}
 
 	@Override
@@ -60,52 +63,61 @@ public class UserServiceImpl implements UserService{
 	}
 
 	@Override
-	public UserDto updateUser(UserDto userDto, Long userId) throws Exception {
+	public UserDto updateUser(UserUpdateDto userUpdateDto, Long userId) throws Exception {
 	
-		UserDto requestUserDto = getUserById(userId);
+		User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
 		
-		if(userDto.getFirstName() != null) {
-			requestUserDto.setFirstName(userDto.getFirstName());
+		if(userUpdateDto.getFirstName() != null) {
+			user.setFirstName(userUpdateDto.getFirstName());
 		}
-		if(userDto.getLastName() != null) {
-			requestUserDto.setLastName(userDto.getLastName());
-		}
-		
-		if(userDto.getEmail() != null) {
-			requestUserDto.setEmail(userDto.getEmail());
+		if(userUpdateDto.getLastName() != null) {
+			user.setLastName(userUpdateDto.getLastName());
 		}
 		
-		if(userDto.getPhoneNo() != null) {
-			requestUserDto.setPhoneNo(userDto.getPhoneNo());
+		if(userUpdateDto.getEmail() != null) {
+			user.setEmail(userUpdateDto.getEmail());
 		}
 		
-		if(userDto.getAddress() != null) {
-			requestUserDto.setAddress(updateAddress(userDto, requestUserDto));
+		if(userUpdateDto.getPhoneNo() != null) {
+			user.setPhoneNo(userUpdateDto.getPhoneNo());
 		}
 		
-		userRepository.save(convertToEntity(requestUserDto));
+		if(userUpdateDto.getUsername() != null) {
+			user.setUsername(userUpdateDto.getUsername());
+		}
 		
-		return requestUserDto;
+		if(userUpdateDto.getAddressDto() != null) {
+			Address currentAddress = user.getAddress();
+			Address updatedAddress = updateAddress(userUpdateDto.getAddressDto(), currentAddress);
+			user.setAddress(updatedAddress);
+		}
+		
+		User savedUser = userRepository.save(user);
+		
+		
+		return convertToDto(savedUser);
 	}
 	
-	private Address updateAddress(UserDto userDto, UserDto requestDto) {
-		Address currAddress = requestDto.getAddress();
-		Address newAddress = userDto.getAddress();
-		if(newAddress.getCity() != null) {
-			currAddress.setCity(newAddress.getCity());
+	private Address updateAddress(AddressDto addressDto, Address currentAddress) {
+		
+		if(addressDto.getState() != null) {
+			currentAddress.setState(addressDto.getState());
 		}
-		if(newAddress.getCountry() != null) {
-			currAddress.setCountry(newAddress.getCountry());
+		if(addressDto.getCity() != null) {
+			currentAddress.setCity(addressDto.getCity());
 		}
-		if(newAddress.getStreet() != null) {
-			currAddress.setStreet(newAddress.getStreet());
+		if(addressDto.getCountry() != null) {
+			currentAddress.setCountry(addressDto.getCountry());
+		}
+		if(addressDto.getStreet() != null) {
+			currentAddress.setStreet(addressDto.getStreet());
 		}
 		
-		if(newAddress.getPinCode() != null) {
-			currAddress.setPinCode(newAddress.getPinCode());
+		if(addressDto.getPinCode() != null) {
+			currentAddress.setPinCode(addressDto.getPinCode());
 		}
 		
-		return newAddress;
+		return currentAddress;
 	}
 
 //	Delete user by id

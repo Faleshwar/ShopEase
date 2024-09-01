@@ -1,7 +1,10 @@
 
 package com.shopease.dto;
 
+import java.util.List;
+
 import com.shopease.model.Category;
+import com.shopease.model.User;
 
 public class ProductDto {
 
@@ -19,6 +22,15 @@ public class ProductDto {
 	
 	private Category category;
 	
+	private User user;
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
 
 	public String getImage() {
 		return image;
@@ -76,10 +88,9 @@ public class ProductDto {
 		this.category = category;
 	}
 
-	
 
 	public ProductDto(Long id, String name, String image, String description, Double price, Integer stock,
-			Category category) {
+			Category category, User user) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -88,6 +99,7 @@ public class ProductDto {
 		this.price = price;
 		this.stock = stock;
 		this.category = category;
+		this.user = user;
 	}
 
 	public ProductDto() {

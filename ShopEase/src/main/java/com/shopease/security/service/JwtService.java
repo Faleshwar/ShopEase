@@ -5,7 +5,11 @@ import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.shopease.model.User;
+import com.shopease.repository.UserRepository;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -14,6 +18,9 @@ import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtService {
+	
+	@Autowired
+	private UserRepository userRepository;
 	
 	private final String SECRET_KEY = "sjalka0227w7rwuwsaljkajamzalkfafjl23r827028jfajflkaflau2wroa2882jafsdan";
 		
@@ -28,7 +35,15 @@ public class JwtService {
 	}
 	
 	public String getUsername(String token) {
-		return extractClaim(token, Claims::getSubject);
+		String username = extractClaim(token, Claims::getSubject);
+		
+		return username;
+	}
+	
+	public Long getUserId(String token) {
+		String username = getUsername(token);
+		User user = userRepository.findByUsername(username).orElseThrow(()->new RuntimeException("Username not found"));
+		return user.getId();
 	}
 	
 	public boolean validateToken(String token, String username) {

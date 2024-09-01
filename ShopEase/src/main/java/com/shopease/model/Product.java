@@ -1,12 +1,20 @@
 package com.shopease.model;
 
 
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 
 @Entity
@@ -30,6 +38,13 @@ public class Product {
 	@ManyToOne(cascade = jakarta.persistence.CascadeType.ALL)
 	@JoinColumn(name = "category_id", referencedColumnName = "id")
 	private Category category;
+	
+	@ManyToOne(cascade = CascadeType.ALL)
+	private User user;
+	
+	@ManyToMany(cascade = CascadeType.ALL)
+	@JsonIgnore
+	private List<Cart> carts = new ArrayList<>();
 
 	public Long getId() {
 		return id;
@@ -89,10 +104,25 @@ public class Product {
 		this.image = image;
 	}
 
-	
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public List<Cart> getCarts() {
+		return carts;
+	}
+
+	public void setCart(List<Cart> carts) {
+		this.carts = carts;
+	}
 
 	public Product(Long id, String name, String image, String description, Double price, Integer stock,
-			Category category) {
+			Category category, User user) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -101,7 +131,8 @@ public class Product {
 		this.price = price;
 		this.stock = stock;
 		this.category = category;
-	}
+		this.user = user;
+		}
 
 	public Product() {
 	

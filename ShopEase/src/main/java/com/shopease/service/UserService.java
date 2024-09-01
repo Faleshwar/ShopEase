@@ -3,6 +3,7 @@ package com.shopease.service;
 import java.util.List;
 
 import com.shopease.dto.UserDto;
+import com.shopease.dto.UserUpdateDto;
 
 public interface UserService {
 	
@@ -10,7 +11,7 @@ public interface UserService {
 	
 	UserDto addUser(UserDto userDto);
 	
-	UserDto updateUser(UserDto userDto, Long userId) throws Exception;
+	UserDto updateUser(UserUpdateDto updateDto, Long userId) throws Exception;
 	
 	UserDto deleteUser(Long userId) throws Exception;
 	

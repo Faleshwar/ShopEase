@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.shopease.dto.ProductDto;
+import com.shopease.dto.UserDto;
 import com.shopease.model.Category;
 import com.shopease.model.Product;
+import com.shopease.model.User;
 import com.shopease.repository.CategoryRepository;
 import com.shopease.repository.ProductRepository;
+import com.shopease.repository.UserRepository;
 import com.shopease.service.ProductService;
 
 
@@ -24,12 +27,15 @@ public class ProductServiceImpl implements ProductService{
 	@Autowired
 	private CategoryRepository categoryRepository;
 	
-	private Product convertToEntity(ProductDto productDto) {
-		return new Product(productDto.getId(), productDto.getName(), productDto.getImage(), productDto.getDescription(), productDto.getPrice(), productDto.getStock(),productDto.getCategory());
+	@Autowired
+	private UserRepository userRepository;
+	
+	public Product convertToEntity(ProductDto productDto) {
+		return new Product(productDto.getId(), productDto.getName(), productDto.getImage(), productDto.getDescription(), productDto.getPrice(), productDto.getStock(),productDto.getCategory(), productDto.getUser());
 	}
 	
-	private ProductDto convertToDto(Product product) {
-		return new ProductDto(product.getId(), product.getName(), product.getImage(), product.getDescription(),product.getPrice(),product.getStock(), product.getCategory());
+	public ProductDto convertToDto(Product product) {
+		return new ProductDto(product.getId(), product.getName(), product.getImage(), product.getDescription(),product.getPrice(),product.getStock(), product.getCategory(), product.getUser());
 	}
 
 	@Override
@@ -37,6 +43,11 @@ public class ProductServiceImpl implements ProductService{
 	
 		List<Product> products = productRepository.findAll();
 		return 	products.stream().map(this::convertToDto).collect(Collectors.toList());
+	}
+	
+	public List<ProductDto> getAllProductsOfSeller(UserDto userDto){
+		List<Product> products = userDto.getProducts();
+		return products.stream().map(this::convertToDto).collect(Collectors.toList());
 	}
 
 	@Override
@@ -99,8 +110,14 @@ public class ProductServiceImpl implements ProductService{
 	}
 
 	@Override
-	public ProductDto addProduct(ProductDto productDto) {
+	public ProductDto addProduct(ProductDto productDto, Long userId) throws Exception {
 		Product product = convertToEntity(productDto);
+		Optional<User> optionalUser = userRepository.findById(userId);
+		if(optionalUser.isEmpty()) {
+			throw new RuntimeException("User not found");
+		}
+		User user = optionalUser.get();
+		product.setUser(user);
 		Category category = categoryRepository.findByName(productDto.getCategory().getName());
 		product.setCategory(category);
 		Product savedProduct = productRepository.save(product);
